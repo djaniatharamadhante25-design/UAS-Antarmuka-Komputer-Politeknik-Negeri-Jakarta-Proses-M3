@@ -21,55 +21,161 @@
     @stack('styles')
 </head>
 <body>
-<nav class="site-nav">
+<nav class="site-nav" id="siteHeader">
     <div class="container nav-inner">
-        <a class="brand" href="{{ route('home') }}"><span class="brand-mark">O</span><span>Otaku Track</span></a>
-
-        <div class="nav-links" id="primary-nav">
-            <a href="{{ route('search', ['type' => 'anime']) }}">Explore</a>
-            <a href="{{ route('forum') }}">Forum</a>
-            <a href="{{ route('search', ['type' => 'manga']) }}">Manga</a>
+        <!-- Brand on Left -->
+        <div class="brand-col">
+            <a class="brand" href="{{ route('home') }}" aria-label="Otaku Track">
+                <span class="brand-mark">O</span>
+                <span class="brand-name">Otaku<span class="brand-accent">Track</span></span>
+            </a>
         </div>
 
-        <form class="nav-search" method="get" action="{{ route('search') }}">
-            <input type="hidden" name="type" value="{{ request()->query('type', 'anime') === 'manga' ? 'manga' : 'anime' }}">
-            <input name="q" value="{{ (string) request()->query('q', '') }}" placeholder="Search anime..." aria-label="Search anime">
-            <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </form>
+        <!-- Center Floating Capsule (Navigation & Search) -->
+        <div class="nav-center-col" id="primary-nav">
+            <div class="nav-capsule">
+                <div class="nav-links">
+                    <a class="nav-item {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Home</span>
+                    </a>
+                    <a class="nav-item {{ (request()->routeIs('search') && request('type') === 'anime') ? 'active' : '' }}" href="{{ route('search', ['type' => 'anime']) }}">
+                        <i class="fa-solid fa-film"></i>
+                        <span>Anime</span>
+                    </a>
+                    <a class="nav-item {{ (request()->routeIs('search') && request('type') === 'manga') ? 'active' : '' }}" href="{{ route('search', ['type' => 'manga']) }}">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Manga</span>
+                    </a>
+                    <a class="nav-item {{ request()->routeIs('forum*') || request()->routeIs('thread*') ? 'active' : '' }}" href="{{ route('forum') }}">
+                        <i class="fa-solid fa-comments"></i>
+                        <span>Forum</span>
+                    </a>
+                </div>
 
-        <div class="nav-actions">
-            <button class="icon-btn menu-btn" id="nav-toggle" type="button" aria-label="Buka menu" aria-controls="primary-nav" aria-expanded="false">
+                <div class="capsule-divider" aria-hidden="true"></div>
+
+                <!-- Search Bar inside Center Capsule -->
+                <form class="nav-search-capsule" method="get" action="{{ route('search') }}">
+                    <input type="hidden" name="type" value="{{ request()->query('type', 'anime') === 'manga' ? 'manga' : 'anime' }}">
+                    <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
+                    <input name="q" value="{{ (string) request()->query('q', '') }}" placeholder="Search anime, manga..." aria-label="Cari anime atau manga">
+                </form>
+
+                <!-- Mobile Only User Actions (inside mobile drawer) -->
+                <div class="mobile-user-area">
+                    <div class="capsule-divider" aria-hidden="true"></div>
+                    @if ($currentUser)
+                        @if ($currentUser->role === 'admin')
+                            <a class="admin-capsule-link" href="{{ route('admin') }}" title="Kelola data">
+                                <i class="fa-solid fa-sliders"></i>
+                                <span>Kelola Data</span>
+                            </a>
+                        @endif
+                        <a class="user-capsule-pill" href="{{ route('profile') }}">
+                            <span class="user-avatar-dot">{{ strtoupper(substr($currentUser->username, 0, 1)) }}</span>
+                            <span class="user-name-label">{{ $currentUser->username }}</span>
+                        </a>
+                    @else
+                        <a class="login-capsule-link" href="{{ route('login') }}">
+                            <i class="fa-regular fa-user"></i>
+                            <span>Login</span>
+                        </a>
+                        <a class="register-capsule-btn" href="{{ route('register') }}">
+                            <span>Daftar</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Right User Actions Capsule (Desktop) -->
+        <div class="nav-right-col">
+            <div class="nav-user-capsule">
+                @if ($currentUser)
+                    @if ($currentUser->role === 'admin')
+                        <a class="admin-capsule-link" href="{{ route('admin') }}" title="Kelola data">
+                            <i class="fa-solid fa-sliders"></i>
+                        </a>
+                    @endif
+                    <a class="user-capsule-pill" href="{{ route('profile') }}" title="Profil {{ $currentUser->username }}">
+                        <span class="user-avatar-dot">{{ strtoupper(substr($currentUser->username, 0, 1)) }}</span>
+                        <span class="user-name-label">{{ $currentUser->username }}</span>
+                    </a>
+                @else
+                    <a class="login-capsule-link" href="{{ route('login') }}">
+                        <i class="fa-regular fa-user"></i>
+                        <span>Login</span>
+                    </a>
+                    <a class="register-capsule-btn" href="{{ route('register') }}">
+                        <span>Daftar</span>
+                    </a>
+                @endif
+            </div>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button class="menu-btn" id="nav-toggle" type="button" aria-label="Buka menu navigasi" aria-controls="primary-nav" aria-expanded="false">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            @if ($currentUser)
-                @if ($currentUser->role === 'admin')
-                    <a class="admin-link" href="{{ route('admin') }}" title="Kelola data"><i class="fa-solid fa-sliders"></i><span>Kelola Data</span></a>
-                @endif
-                <a class="user-pill" href="{{ route('profile') }}"><span class="mini-avatar">{{ strtoupper(substr($currentUser->username, 0, 1)) }}</span>{{ $currentUser->username }}</a>
-            @else
-                <a class="login-link" href="{{ route('login') }}">Login</a>
-                <a class="register-btn" href="{{ route('register') }}">Register</a>
-            @endif
         </div>
     </div>
 </nav>
 
 <main>
-    @if (session('success'))
-        <div class="container pt-3"><div class="alert alert-success">{{ session('success') }}</div></div>
-    @endif
-    @if (session('error'))
-        <div class="container pt-3"><div class="alert alert-danger">{{ session('error') }}</div></div>
+    @if (session('success') || session('error'))
+        <div class="container pt-3 flash-alerts">
+            @if (session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
+        </div>
     @endif
     @yield('content')
 </main>
 
-<footer class="footer py-5 mt-5">
-    <div class="container d-flex justify-content-between flex-wrap gap-3">
-        <div><strong>Otaku Track</strong><div class="small text-secondary">Anime & manga tracking project.</div></div>
-        <div class="small text-secondary">Metadata powered by AniList + Jikan API.</div>
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-top-row">
+            <!-- Brand Info -->
+            <div class="footer-brand">
+                <a class="brand" href="{{ route('home') }}" aria-label="Otaku Track">
+                    <span class="brand-mark">O</span>
+                    <span class="brand-name">Otaku<span class="brand-accent">Track</span></span>
+                </a>
+                <p class="footer-tagline">Platform katalog, watchlist, dan komunitas penggemar anime & manga.</p>
+            </div>
+
+            <!-- Quick Navigation Links -->
+            <div class="footer-nav-links">
+                <a href="{{ route('home') }}">Home</a>
+                <a href="{{ route('search', ['type' => 'anime']) }}">Anime</a>
+                <a href="{{ route('search', ['type' => 'manga']) }}">Manga</a>
+                <a href="{{ route('forum') }}">Forum</a>
+                <a href="{{ route('search') }}">Pencarian</a>
+            </div>
+        </div>
+
+        <div class="footer-divider" aria-hidden="true"></div>
+
+        <!-- Disclaimer & Copyright -->
+        <div class="footer-bottom-row">
+            <p class="footer-disclaimer">
+                <strong>Disclaimer:</strong> Otaku Track tidak mengunggah atau menyimpan berkas media apa pun di server kami. Seluruh metadata, gambar, dan informasi bersumber dari API publik pihak ketiga (AniList & Jikan/MyAnimeList).
+            </p>
+            <div class="footer-meta">
+                <span>&copy; {{ date('Y') }} Otaku Track &middot; All rights reserved.</span>
+                <span class="footer-badge">v5.0 &middot; AniList & Jikan API</span>
+            </div>
+        </div>
     </div>
 </footer>
+
+<!-- Floating Back to Top Button -->
+<button id="backToTop" class="back-to-top" type="button" aria-label="Kembali ke atas">
+    <i class="fa-solid fa-arrow-up"></i>
+</button>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 @vite(['resources/js/app.js'])

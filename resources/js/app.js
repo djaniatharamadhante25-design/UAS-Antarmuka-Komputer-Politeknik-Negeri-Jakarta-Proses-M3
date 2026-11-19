@@ -1,12 +1,27 @@
 /* Otaku Track - script global (navigasi mobile, bookmark, fallback katalog). */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- Header scroll effect ------------------------------------------------
+  const siteNav = document.getElementById('siteHeader');
+  if (siteNav) {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        siteNav.classList.add('scrolled');
+      } else {
+        siteNav.classList.remove('scrolled');
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+  }
+
   // --- Navigasi mobile -----------------------------------------------------
   const navToggle = document.getElementById('nav-toggle');
   const navLinks = document.getElementById('primary-nav');
 
   if (navToggle && navLinks) {
-    navToggle.addEventListener('click', () => {
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
       const open = document.body.classList.toggle('nav-open');
       navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
@@ -16,6 +31,29 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.remove('nav-open');
         navToggle.setAttribute('aria-expanded', 'false');
       }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (document.body.classList.contains('nav-open') && !navLinks.contains(e.target) && !navToggle.contains(e.target)) {
+        document.body.classList.remove('nav-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // --- Back to top button --------------------------------------------------
+  const backToTop = document.getElementById('backToTop');
+  if (backToTop) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 350) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 

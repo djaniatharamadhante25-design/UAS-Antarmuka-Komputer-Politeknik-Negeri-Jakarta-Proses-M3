@@ -10,8 +10,8 @@ final class HomeController extends Controller
     public function __invoke(JikanService $api): View
     {
         $popular = $api->popularAnime(12);
-        $top = $api->topAnime(6);
-        $manga = $api->popularManga(8);
+        $top = $api->topAnime(10);
+        $manga = $api->popularManga(10);
 
         // API sedang gagal keduanya -> tampil fallback "API tidak tersedia".
         $apiOnline = ! empty($popular) || ! empty($top);
