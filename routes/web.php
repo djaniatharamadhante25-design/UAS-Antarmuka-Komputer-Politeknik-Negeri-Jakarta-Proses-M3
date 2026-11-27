@@ -56,6 +56,76 @@ Route::middleware(['auth', 'admin'])->group(function () {
 // Health check
 Route::get('/health', HealthController::class)->name('health');
 
+// Diagnostic endpoint untuk serverless Vercel
+Route::get('/diag', function () {
+    $info = [];
+    $info['php_version'] = PHP_VERSION;
+    $info['app_key_exists'] = ! empty(config('app.key'));
+    $info['app_key_preview'] = substr((string) config('app.key'), 0, 10).'...';
+    $info['session_driver'] = config('session.driver');
+    $info['cache_store'] = config('cache.default');
+    $info['db_default'] = config('database.default');
+    $info['db_host'] = config('database.connections.mysql.host');
+    $info['view_compiled'] = config('view.compiled');
+    $info['storage_path'] = storage_path();
+    $info['is_storage_writable'] = is_writable(storage_path());
+    $info['is_tmp_writable'] = is_writable('/tmp');
+
+    // Test DB
+    try {
+        \Illuminate\Support\Facades\DB::select('SELECT 1');
+        $info['db_test'] = 'OK';
+    } catch (\Throwable $e) {
+        $info['db_test'] = 'ERROR: '.$e->getMessage();
+    }
+
+    // Test Cache
+    try {
+        \Illuminate\Support\Facades\Cache::put('diag_test', '123', 10);
+        $info['cache_test'] = \Illuminate\Support\Facades\Cache::get('diag_test') === '123' ? 'OK' : 'FAIL';
+    } catch (\Throwable $e) {
+        $info['cache_test'] = 'ERROR: '.$e->getMessage();
+    }
+
+    // Test Session
+    try {
+        session()->put('diag_session', 'abc');
+        $info['session_test'] = session()->get('diag_session') === 'abc' ? 'OK' : 'FAIL';
+    } catch (\Throwable $e) {
+        $info['session_test'] = 'ERROR: '.$e->getMessage();
+    }
+
+    // Test View Render
+    try {
+        $html = view('health', [
+            'phpOk' => PHP_VERSION,
+            'curlOk' => true,
+            'dbOk' => false,
+            'dbError' => 'test',
+            'sample' => [],
+            'apiOk' => false,
+            'apiError' => 'test',
+            'aniSample' => [],
+            'aniOk' => false,
+            'aniError' => 'test',
+        ])->render();
+        $info['view_test'] = 'OK (len: '.strlen($html).')';
+    } catch (\Throwable $e) {
+        $info['view_test'] = 'ERROR: '.$e->getMessage();
+    }
+
+    // Test Jikan API
+    try {
+        $jikan = app(\App\Services\JikanService::class);
+        $res = $jikan->popularAnime(1);
+        $info['jikan_test'] = 'OK (count: '.count($res).')';
+    } catch (\Throwable $e) {
+        $info['jikan_test'] = 'ERROR: '.$e->getMessage();
+    }
+
+    return response()->json($info);
+});
+
 // Kompatibilitas bookmark lama /index.php?page=... → redirect ke rute baru
 Route::get('/index.php', function () {
     $page = request()->query('page', 'home');
