@@ -33,6 +33,8 @@ $_SERVER['HTTPS'] = 'on';
 $_SERVER['SERVER_PORT'] = 443;
 putenv('APP_URL=https://' . ($_SERVER['HTTP_HOST'] ?? 'otaku-track-azure.vercel.app'));
 $_ENV['APP_URL'] = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'otaku-track-azure.vercel.app');
+putenv('ASSET_URL=https://' . ($_SERVER['HTTP_HOST'] ?? 'otaku-track-azure.vercel.app'));
+$_ENV['ASSET_URL'] = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'otaku-track-azure.vercel.app');
 
 // Show debug trace so we can pinpoint errors if any
 putenv('APP_DEBUG=true');
