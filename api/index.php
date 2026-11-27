@@ -28,6 +28,12 @@ foreach ($dirs as $dir) {
 putenv('VIEW_COMPILED_PATH=/tmp/views');
 $_ENV['VIEW_COMPILED_PATH'] = '/tmp/views';
 
+// Force HTTPS on Vercel
+$_SERVER['HTTPS'] = 'on';
+$_SERVER['SERVER_PORT'] = 443;
+putenv('APP_URL=https://' . ($_SERVER['HTTP_HOST'] ?? 'otaku-track-azure.vercel.app'));
+$_ENV['APP_URL'] = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'otaku-track-azure.vercel.app');
+
 // Show debug trace so we can pinpoint errors if any
 putenv('APP_DEBUG=true');
 $_ENV['APP_DEBUG'] = 'true';
