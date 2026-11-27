@@ -1,3 +1,6 @@
+# UAS-Antarmuka-Komputer-Politeknik-Negeri-Jakarta-Proses-M3
+Progress UAS Antarmuka Komputer Projek OtakuTrack by kelompok 6
+
 # Otaku Track
 
 Aplikasi tracking anime & manga berbasis **Laravel 13**: katalog dari Jikan/AniList,
