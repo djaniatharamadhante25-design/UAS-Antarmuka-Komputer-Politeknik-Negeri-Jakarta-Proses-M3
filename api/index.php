@@ -28,6 +28,10 @@ foreach ($dirs as $dir) {
 putenv('VIEW_COMPILED_PATH=/tmp/views');
 $_ENV['VIEW_COMPILED_PATH'] = '/tmp/views';
 
+// Show debug trace so we can pinpoint errors if any
+putenv('APP_DEBUG=true');
+$_ENV['APP_DEBUG'] = 'true';
+
 if (empty($_ENV['APP_KEY']) && !getenv('APP_KEY')) {
     putenv('APP_KEY=base64:5nHw0MHWC1QoRUHUCkGfU8Rkhyc39ODjaThZDTqlr8k=');
     $_ENV['APP_KEY'] = 'base64:5nHw0MHWC1QoRUHUCkGfU8Rkhyc39ODjaThZDTqlr8k=';
@@ -51,6 +55,18 @@ if (empty($_ENV['OTAKU_CACHE_STORE']) && !getenv('OTAKU_CACHE_STORE')) {
 if (empty($_ENV['LOG_CHANNEL']) && !getenv('LOG_CHANNEL')) {
     putenv('LOG_CHANNEL=stderr');
     $_ENV['LOG_CHANNEL'] = 'stderr';
+}
+
+// Safe database fallback in /tmp if cloud DB not configured
+if (empty($_ENV['DB_HOST']) && !getenv('DB_HOST')) {
+    $sqlitePath = '/tmp/database.sqlite';
+    if (!file_exists($sqlitePath)) {
+        @touch($sqlitePath);
+    }
+    putenv('DB_CONNECTION=sqlite');
+    $_ENV['DB_CONNECTION'] = 'sqlite';
+    putenv("DB_DATABASE={$sqlitePath}");
+    $_ENV['DB_DATABASE'] = $sqlitePath;
 }
 
 // 3. Register Composer autoloader
