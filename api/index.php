@@ -79,5 +79,15 @@ $app = require_once __DIR__ . '/../bootstrap/app.php';
 // 5. Force storage path to /tmp/storage so Laravel never touches read-only /var/task
 $app->useStoragePath($storagePath);
 
-// 6. Handle request
-$app->handleRequest(Request::capture());
+// 6. Handle request with explicit exception catch for serverless diagnosis
+try {
+    $app->handleRequest(Request::capture());
+} catch (\Throwable $e) {
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "SERVERLESS EXCEPTION CAUGHT:\n";
+    echo get_class($e) . ': ' . $e->getMessage() . "\n";
+    echo "File: " . $e->getFile() . ':' . $e->getLine() . "\n\n";
+    echo "Stack Trace:\n" . $e->getTraceAsString();
+    exit;
+}
