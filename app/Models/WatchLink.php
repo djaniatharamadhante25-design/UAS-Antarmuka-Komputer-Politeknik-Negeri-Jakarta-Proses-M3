@@ -15,7 +15,7 @@ class WatchLink extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'external_id', 'media_type', 'provider', 'url', 'created_by',
+        'external_id', 'media_type', 'title', 'image_url', 'provider', 'url', 'created_by',
     ];
 
     protected function casts(): array

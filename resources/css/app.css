@@ -1586,3 +1586,205 @@ body {
     gap: 8px;
   }
 }
+
+
+/* ==========================================================================
+   ADMIN MEDIA PICKER & WATCH LINKS ENHANCEMENT
+   ========================================================================== */
+.adm-media-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+}
+.adm-media-thumb {
+  width: 42px;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #121c2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.adm-media-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.adm-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  font-size: 16px;
+  background: #0e1728;
+}
+.adm-media-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.adm-media-title {
+  color: #f1f5f9;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+  display: block;
+}
+.adm-media-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.adm-provider-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(63, 131, 248, 0.12);
+  border: 1px solid rgba(63, 131, 248, 0.25);
+  border-radius: 6px;
+  color: #93c5fd;
+  font-size: 11.5px;
+}
+.adm-picker-section {
+  background: rgba(11, 19, 34, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.adm-picker-search-box {
+  position: relative;
+}
+.adm-picker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #0e1728;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+  z-index: 1050;
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.adm-picker-loading, .adm-picker-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+.adm-picker-list {
+  display: flex;
+  flex-direction: column;
+}
+.adm-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.adm-picker-item:last-child {
+  border-bottom: none;
+}
+.adm-picker-item:hover {
+  background: rgba(63, 131, 248, 0.2);
+}
+.adm-picker-item-thumb {
+  width: 36px;
+  height: 52px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #111a2d;
+}
+.adm-picker-item-info {
+  min-width: 0;
+  flex: 1;
+}
+.adm-picker-item-title {
+  font-size: 12.5px;
+  color: #ffffff;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.adm-picker-item-meta {
+  font-size: 10.5px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.adm-selected-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: rgba(63, 131, 248, 0.08);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 8px;
+}
+.adm-preview-thumb {
+  width: 44px;
+  height: 62px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #111a2d;
+}
+.adm-preview-detail {
+  min-width: 0;
+}
+.adm-preview-title {
+  font-size: 13px;
+  color: #ffffff;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 360px;
+}
+.adm-preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+.adm-quick-providers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.adm-pill-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-size: 10.5px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.adm-pill-btn:hover {
+  background: rgba(63, 131, 248, 0.2);
+  border-color: #3f83f8;
+  color: #ffffff;
+}

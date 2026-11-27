@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MediaList;
 use App\Models\WatchLink;
+use App\Services\JikanService;
 use App\Support\AdminPresenter;
 use App\Support\LocalCatalog;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -41,6 +42,56 @@ final class AdminController extends Controller
         $data['section'] = $section;
 
         return view('admin.dashboard', $data);
+    }
+
+    public function searchMediaPicker(Request $request, JikanService $api): \Illuminate\Http\JsonResponse
+    {
+        $q = trim((string) $request->query('q', ''));
+        $type = $request->query('type', 'anime') === 'manga' ? 'manga' : 'anime';
+
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $results = [];
+        try {
+            $raw = $type === 'anime'
+                ? $api->searchAnime($q, [], 1, 8)
+                : $api->searchManga($q, [], 1, 8);
+
+            if (empty($raw)) {
+                $raw = LocalCatalog::titles($type, $q, 1, 8);
+            }
+
+            foreach ($raw as $item) {
+                $malId = (int) ($item['mal_id'] ?? $item['idMal'] ?? 0);
+                if ($malId < 1) {
+                    continue;
+                }
+
+                $title = $item['title'] ?? ($item['title_english'] ?? ($item['title_romaji'] ?? 'Untitled'));
+                $img = $item['images']['jpg']['image_url']
+                    ?? ($item['coverImage']['large']
+                    ?? ($item['images']['jpg']['large_image_url'] ?? null));
+                $year = $item['year'] ?? ($item['aired']['prop']['from']['year'] ?? ($item['seasonYear'] ?? ''));
+                $format = $item['type'] ?? ($item['format'] ?? strtoupper($type));
+                $score = $item['score'] ?? ($item['averageScore'] ? number_format($item['averageScore'] / 10, 1) : null);
+
+                $results[] = [
+                    'mal_id' => $malId,
+                    'title' => $title,
+                    'image_url' => $img,
+                    'media_type' => $type,
+                    'format' => $format,
+                    'year' => (string) $year,
+                    'score' => $score,
+                ];
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return response()->json($results);
     }
 
     private function counts(): array
@@ -184,21 +235,26 @@ final class AdminController extends Controller
         $q = trim((string) $request->query('q', ''));
         $type = (string) $request->query('type', '');
 
+        $hasTitleCol = \Illuminate\Support\Facades\Schema::hasColumn('watch_links', 'title');
+        $selectCols = 'w.id, w.external_id, w.media_type, w.provider, w.url, w.created_at, u.username';
+        if ($hasTitleCol) {
+            $selectCols .= ', w.title, w.image_url';
+        }
+
         $query = DB::table('watch_links as w')
-            ->selectRaw('w.id, w.external_id, w.media_type, w.provider, w.url, w.created_at, u.username')
+            ->selectRaw($selectCols)
             ->leftJoin('users as u', 'u.id', '=', 'w.created_by');
 
         $where = [];
         $params = [];
         if ($q !== '') {
+            $like = AdminPresenter::like($q);
             if (ctype_digit($q)) {
-                $like = AdminPresenter::like($q);
-                $where[] = "(w.external_id = ? OR w.provider LIKE ? ESCAPE '!')";
-                $params = [(int) $q, $like];
+                $where[] = "(w.external_id = ? OR w.provider LIKE ? ESCAPE '!'" . ($hasTitleCol ? " OR w.title LIKE ? ESCAPE '!'" : "") . ")";
+                $params = $hasTitleCol ? [(int) $q, $like, $like] : [(int) $q, $like];
             } else {
-                $like = AdminPresenter::like($q);
-                $where[] = "(w.provider LIKE ? ESCAPE '!' OR w.url LIKE ? ESCAPE '!')";
-                $params = [$like, $like];
+                $where[] = "(w.provider LIKE ? ESCAPE '!' OR w.url LIKE ? ESCAPE '!'" . ($hasTitleCol ? " OR w.title LIKE ? ESCAPE '!'" : "") . ")";
+                $params = $hasTitleCol ? [$like, $like, $like] : [$like, $like];
             }
         }
         if (in_array($type, ['anime', 'manga'], true)) {
@@ -215,7 +271,12 @@ final class AdminController extends Controller
         $edit = null;
         $editId = (int) $request->query('edit', 0);
         if ($editId > 0) {
-            $edit = DB::table('watch_links')->where('id', $editId)->first(['id', 'external_id', 'media_type', 'provider', 'url']);
+            $editCols = ['id', 'external_id', 'media_type', 'provider', 'url'];
+            if ($hasTitleCol) {
+                $editCols[] = 'title';
+                $editCols[] = 'image_url';
+            }
+            $edit = DB::table('watch_links')->where('id', $editId)->first($editCols);
         }
 
         return ['pg' => $pg, 'edit' => $edit, 'filters' => ['q' => $q, 'type' => $type]];
@@ -429,6 +490,8 @@ final class AdminController extends Controller
         $type = $request->input('media_type') === 'manga' ? 'manga' : 'anime';
         $provider = trim((string) $request->input('provider', ''));
         $link = trim((string) $request->input('url', ''));
+        $title = trim((string) $request->input('title', ''));
+        $imageUrl = trim((string) $request->input('image_url', ''));
 
         if ($externalId < 1 || $provider === '' || strlen($provider) > 100 || ! $this->isHttpUrl($link)) {
             return redirect()->to($back)->with('error', 'Data link tidak valid. URL harus diawali http:// atau https://.');
@@ -440,6 +503,10 @@ final class AdminController extends Controller
             'provider' => $provider,
         ];
         $values = ['url' => $link];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('watch_links', 'title')) {
+            $values['title'] = $title ?: null;
+            $values['image_url'] = $imageUrl ?: null;
+        }
 
         if ($id > 0) {
             WatchLink::query()->where('id', $id)->update(array_merge($attributes, $values));

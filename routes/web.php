@@ -46,6 +46,7 @@ Route::get('/thread/{id}', [ForumController::class, 'thread'])->whereNumber('id'
 // Dashboard admin (Kelola Data)
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin');
+    Route::get('/admin/search-media', [AdminController::class, 'searchMediaPicker'])->name('admin.search_media');
     Route::get('/admin/{section}', [AdminController::class, 'dashboard'])
         ->whereIn('section', AdminController::SECTIONS)
         ->name('admin.section');
