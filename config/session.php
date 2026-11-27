@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    'driver' => env('SESSION_DRIVER', (! empty($_ENV['VERCEL']) || ! empty($_SERVER['VERCEL']) || getenv('VERCEL')) ? 'cookie' : 'database'),
 
     /*
     |--------------------------------------------------------------------------

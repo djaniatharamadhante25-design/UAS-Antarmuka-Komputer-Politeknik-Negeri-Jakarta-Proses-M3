@@ -11,7 +11,7 @@ return [
      * Store cache yang dipakai untuk cache response API eksternal
      * dan circuit breaker ApiGuard. Default mengikuti CACHE_STORE.
      */
-    'cache_store' => env('OTAKU_CACHE_STORE', env('CACHE_STORE', 'database')),
+    'cache_store' => env('OTAKU_CACHE_STORE', env('CACHE_STORE', (! empty($_ENV['VERCEL']) || ! empty($_SERVER['VERCEL']) || getenv('VERCEL')) ? 'array' : 'database')),
 
     'cache_prefix' => env('OTAKU_CACHE_PREFIX', 'otaku'),
 

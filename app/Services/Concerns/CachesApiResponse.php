@@ -15,25 +15,37 @@ trait CachesApiResponse
 {
     protected function cacheStore()
     {
-        return Cache::store(config('otaku.cache_store'));
+        try {
+            return Cache::store(config('otaku.cache_store'));
+        } catch (\Throwable) {
+            return Cache::store('array');
+        }
     }
 
     protected function cacheGet(string $key): ?array
     {
-        /** @var array{data: mixed, fetched_at: int} $payload */
-        $payload = $this->cacheStore()->get($key);
+        try {
+            /** @var array{data: mixed, fetched_at: int} $payload */
+            $payload = $this->cacheStore()->get($key);
 
-        return is_array($payload) ? $payload : null;
+            return is_array($payload) ? $payload : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     protected function cachePut(string $key, array $data): void
     {
-        $retention = (int) config('otaku.api.cache_retention', 86400);
+        try {
+            $retention = (int) config('otaku.api.cache_retention', 86400);
 
-        $this->cacheStore()->put($key, [
-            'data' => $data,
-            'fetched_at' => time(),
-        ], now()->addSeconds($retention));
+            $this->cacheStore()->put($key, [
+                'data' => $data,
+                'fetched_at' => time(),
+            ], now()->addSeconds($retention));
+        } catch (\Throwable) {
+            // Abaikan jika cache backend tidak tersedia
+        }
     }
 
     protected function isFresh(array $payload): bool

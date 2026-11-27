@@ -13,21 +13,33 @@ final class ApiGuard
 {
     public static function isDown(string $name): bool
     {
-        return self::store()->has(self::key($name));
+        try {
+            return self::store()->has(self::key($name));
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     public static function markDown(string $name): void
     {
-        self::store()->put(
-            self::key($name),
-            now()->timestamp,
-            now()->addSeconds((int) config('otaku.api.down_cooldown', 60))
-        );
+        try {
+            self::store()->put(
+                self::key($name),
+                now()->timestamp,
+                now()->addSeconds((int) config('otaku.api.down_cooldown', 60))
+            );
+        } catch (\Throwable) {
+            // Abaikan jika cache backend tidak tersedia
+        }
     }
 
     private static function store()
     {
-        return Cache::store(config('otaku.cache_store'));
+        try {
+            return Cache::store(config('otaku.cache_store'));
+        } catch (\Throwable) {
+            return Cache::store('array');
+        }
     }
 
     private static function key(string $name): string
